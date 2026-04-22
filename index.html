@@ -516,7 +516,7 @@
 </div>
 
 <script>
-    // ---------- 六页内容（第5页标题已从“三”改为“二”）----------
+    // ---------- 六页内容（第5页标题已改为“二”）----------
     const pagesData = [
         { title: "一、“十四五”期间北京市版权工作成绩（上）", content: `
             <p>“十四五”时期，北京市立足全国文化中心定位，构建“横向协同、纵向贯通、重点牵引”的版权工作体系，系统推进保护、监管与创新。</p>
@@ -541,7 +541,6 @@
             <p>依托京津冀检察机关<strong>“线索必移、案件必立、信息必通”</strong>的协同机制，专案组实现了跨省“打源头、端窝点、断链条”的全链条打击，累计查扣盗版图书<strong class="stat-highlight">271.6万册</strong>。检察机关通过梳理数十万条电子数据，精准锁定犯罪证据。法院最终判处邵某某等18人有期徒刑，并对主犯处以<strong class="stat-highlight">1500万元</strong>的创纪录罚金，彰显司法威慑。</p>
             <p>针对盗版图书危害未成年人健康的问题，办案机关同步推动建立少儿读物版权专项核查机制，累计销毁劣质图书超<strong>300万册</strong>，形成了<strong>“刑事打击+行政监管+公益保护”</strong>的立体治理模式，为全国知识产权保护与未成年人权益守护提供了“北京方案”。</p>
         ` },
-        // 以下为第5页：标题已改为“二、版权强国建设典型案例——网络影视剧重点作品版权保护预警机制”
         { title: "二、版权强国建设典型案例——网络影视剧重点作品版权保护预警机制", content: `
             <p>“网络影视剧重点作品版权保护预警机制”是北京市版权局联合多部门创新构建的<strong>“监测—预警—处置”</strong>全链条保护体系。自2024年8月起，对广电总局扶持项目、热播剧等高价值作品分批次发布预警名录，向网络服务商发送预警函，要求其建立快速响应通道，实现从被动维权向主动预防的转变。</p>
             <p>该机制通过技术手段全网监测，依托<strong>“版权链-天平链”</strong>平台识别盗版，并联合网信、通管等部门对境内外侵权网站采取封禁、取消接入等执法措施，形成打击闭环。同时，推动搜索引擎将正版内容置顶，引导网盘、短视频平台将预警作品纳入关键词库并组建版权专班，确保侵权投诉能在<strong class="stat-highlight">24小时内</strong>得到处理。</p>
@@ -559,7 +558,7 @@
     let coverPage = document.getElementById('coverPage');
     let enterBtn = document.getElementById('enterBtn');
 
-    // 渲染分页视图
+    // 渲染分页视图，并动态绑定按钮事件（确保每次重新渲染后事件正确）
     function renderPages() {
         pagesContainer.innerHTML = '';
         pagesData.forEach((page, idx) => {
@@ -574,23 +573,42 @@
                 <div class="page-title">${page.title}</div>
                 <div class="page-content">${page.content}</div>
                 <div class="nav-buttons">
-                    <button class="nav-btn prev-btn" ${idx === 0 ? 'disabled' : ''}>◀ 上一页</button>
-                    ${idx === pagesData.length-1 ? '<button class="nav-btn start-final-btn">✨ 开始挑战 ✨</button>' : '<button class="nav-btn next-btn">下一页 ▶</button>'}
+                    <button class="nav-btn prev-btn" data-idx="${idx}">◀ 上一页</button>
+                    ${idx === pagesData.length-1 ? '<button class="nav-btn start-final-btn" data-idx="final">✨ 开始挑战 ✨</button>' : '<button class="nav-btn next-btn" data-idx="${idx}">下一页 ▶</button>'}
                 </div>
             `;
             pagesContainer.appendChild(card);
         });
 
-        // 绑定按钮事件
-        document.querySelectorAll('.prev-btn').forEach(btn => {
-            btn.addEventListener('click', () => { if (currentPage > 0) { currentPage--; updatePageVisibility(); } });
+        // 使用事件委托绑定所有导航按钮（避免重复绑定）
+        pagesContainer.querySelectorAll('.prev-btn').forEach(btn => {
+            btn.removeEventListener('click', handlePrev);
+            btn.addEventListener('click', handlePrev);
         });
-        document.querySelectorAll('.next-btn').forEach(btn => {
-            btn.addEventListener('click', () => { if (currentPage < pagesData.length-1) { currentPage++; updatePageVisibility(); } });
+        pagesContainer.querySelectorAll('.next-btn').forEach(btn => {
+            btn.removeEventListener('click', handleNext);
+            btn.addEventListener('click', handleNext);
         });
-        document.querySelectorAll('.start-final-btn').forEach(btn => {
-            btn.addEventListener('click', () => { startGame(); });
+        pagesContainer.querySelectorAll('.start-final-btn').forEach(btn => {
+            btn.removeEventListener('click', handleStart);
+            btn.addEventListener('click', handleStart);
         });
+    }
+
+    function handlePrev(e) {
+        if (currentPage > 0) {
+            currentPage--;
+            updatePageVisibility();
+        }
+    }
+    function handleNext(e) {
+        if (currentPage < pagesData.length - 1) {
+            currentPage++;
+            updatePageVisibility();
+        }
+    }
+    function handleStart() {
+        startGame();
     }
 
     function updatePageVisibility() {
@@ -604,7 +622,9 @@
     function showPages() {
         coverPage.style.display = 'none';
         pagesContainer.style.display = 'block';
-        renderPages();
+        currentPage = 0;
+        renderPages();      // 初次渲染并绑定事件
+        updatePageVisibility();
     }
 
     // 开始挑战：隐藏分页容器，显示游戏并重置状态
