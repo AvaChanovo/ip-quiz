@@ -29,7 +29,6 @@
             position: relative;
         }
 
-        /* 背景装饰 */
         body::before {
             content: "";
             position: fixed;
@@ -44,7 +43,6 @@
             z-index: 0;
         }
 
-        /* 主容器 */
         .app-container {
             max-width: 560px;
             width: 100%;
@@ -53,7 +51,7 @@
             z-index: 2;
         }
 
-        /* ========= 封面样式（精美红金渐变+故宫元素） ========= */
+        /* ========= 封面样式 ========= */
         .cover-page {
             background: linear-gradient(145deg, #FFF8F0 0%, #FFEFDB 100%);
             border-radius: 56px;
@@ -558,7 +556,15 @@
     let coverPage = document.getElementById('coverPage');
     let enterBtn = document.getElementById('enterBtn');
 
-    // 渲染分页视图，并动态绑定按钮事件（确保每次重新渲染后事件正确）
+    // 返回封面
+    function backToCover() {
+        pagesContainer.style.display = 'none';
+        gameWrapper.classList.remove('active');
+        coverPage.style.display = 'block';
+        currentPage = 0; // 重置页码，下次进入时从第一页开始
+    }
+
+    // 渲染分页视图，并动态绑定按钮事件
     function renderPages() {
         pagesContainer.innerHTML = '';
         pagesData.forEach((page, idx) => {
@@ -573,14 +579,14 @@
                 <div class="page-title">${page.title}</div>
                 <div class="page-content">${page.content}</div>
                 <div class="nav-buttons">
-                    <button class="nav-btn prev-btn" data-idx="${idx}">◀ 上一页</button>
-                    ${idx === pagesData.length-1 ? '<button class="nav-btn start-final-btn" data-idx="final">✨ 开始挑战 ✨</button>' : '<button class="nav-btn next-btn" data-idx="${idx}">下一页 ▶</button>'}
+                    <button class="nav-btn prev-btn">◀ 上一页</button>
+                    ${idx === pagesData.length-1 ? '<button class="nav-btn start-final-btn">✨ 开始挑战 ✨</button>' : '<button class="nav-btn next-btn">下一页 ▶</button>'}
                 </div>
             `;
             pagesContainer.appendChild(card);
         });
 
-        // 使用事件委托绑定所有导航按钮（避免重复绑定）
+        // 绑定事件
         pagesContainer.querySelectorAll('.prev-btn').forEach(btn => {
             btn.removeEventListener('click', handlePrev);
             btn.addEventListener('click', handlePrev);
@@ -596,17 +602,22 @@
     }
 
     function handlePrev(e) {
-        if (currentPage > 0) {
+        if (currentPage === 0) {
+            // 第一页时，点击“上一页”返回封面
+            backToCover();
+        } else if (currentPage > 0) {
             currentPage--;
             updatePageVisibility();
         }
     }
+
     function handleNext(e) {
         if (currentPage < pagesData.length - 1) {
             currentPage++;
             updatePageVisibility();
         }
     }
+
     function handleStart() {
         startGame();
     }
